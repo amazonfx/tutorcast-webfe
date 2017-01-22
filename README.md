@@ -3,7 +3,7 @@ tutorcast-webfe
 
 Webfront end for the tutorcast web application
 
-Web based collaborative document sharing and editing, annotations, and video chat. Entire session is seamless recorded.
+Web based collaborative document sharing and editing, annotations, and video chat. Entire session is seamlessly recorded.
 
 Built with Java on the Play Framework.
 
