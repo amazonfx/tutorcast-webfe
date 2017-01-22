@@ -1,0 +1,43 @@
+#{include 'base/header.html' /}
+</head>
+<body class="login">
+<div class = "lightBody container">
+#{include 'base/navbar_blank.html' /}
+	<div style="width:100%">
+	<div class="well" style="width:400px;margin:auto;margin-top:50px;text-align:center">
+	<a class="btn btn-primary" href="/fbRegister#{if classId }/${classId} #{/ if}"><i class="icon-white icon-user"></i> Login Using Facebook</a>
+		<div style="font-weight:bold;margin-top:33px;margin-bottom:33px;">OR</div>
+	<form id="loginForm" action ="@{SecurityController.authenticate()}" method ="post">	
+		#{if flash.error}
+			<p class="error">
+				&{flash.error}
+			</p>
+		#{/if}
+		#{if flash.success}
+			<p class="success">
+				&{flash.success}
+			</p>
+		#{/if}
+		
+		<p id="username-field">
+			<label for="username">User Email</label>
+			<input type="text" name="username" id="username" value="${flash.username}" />
+		</p>
+		<p id="password-field">
+			<label for="password">Password</label>
+			<input type="password" name="password" id="password" value="" /> 
+			<div style="margin-left:-4px;margin-top:-18px;">
+			<a href="/pwRecover" target="_blank">Lost Password</a>
+			<a style="margin-left:81px" href="/emailRegister#{if classId }/${classId} #{/ if}" target="_blank">Sign-up</a>
+			</div>
+		</p>
+
+		<p id="signin-field">
+			<button type="submit" class="btn" id="signin" >Login</button>
+		</p>
+	</form>
+</div>
+</div>
+</div>
+</body>
+</html>

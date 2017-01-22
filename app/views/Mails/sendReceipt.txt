@@ -1,0 +1,12 @@
+Hello,
+
+This is your receipt for the Tutorcast session you recently paid for. Please keep this for future reference.
+
+Class Name: ${className}
+
+Instructor: ${fullname}
+
+Cost: $${cost} - Paid in full.
+ 
+
+-Tutocast

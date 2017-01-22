@@ -1,0 +1,53 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET    / 	                      					Unsecured.index
+GET    /login 	                      				SecurityController.login
+GET    /login//{classId} 	                      	SecurityController.login
+GET    /fbLogin	                      				SecurityController.facebookAuthenticate
+GET    /pwRecover	                      			UserManagement.recoverPasswordPage
+GET    /pwReset		                      			UserManagement.resetPasswordPage
+GET    /browseVideo		                      		Secured.browseVideo
+POST   /inviteClassUser 	                      	Secured.inviteToClass
+GET   /dashboard	                      			Secured.dashboard
+GET   /userClasses	                      			Secured.getClassesForUser
+
+GET     /fbRegister/{classId}              			UserManagement.facebookRegister
+GET		/emailRegister/{classId}					UserManagement.userRegistrationPage
+GET     /fbRegister             					UserManagement.facebookRegister
+GET		/emailRegister								UserManagement.userRegistrationPage
+POST	/setClassTags								Secured.setClassTags
+
+
+GET     /classLanding/{classId}              		Unsecured.classLanding
+GET     /recentClasses             					Secured.getRecentClasses
+GET     /taughtClasses             					Secured.getTaughtClasses
+GET     /attendedClasses             				Secured.getAttendedClasses
+GET     /scheduledClasses             				Secured.getScheduledClasses
+
+GET     /classroom/{mode}/{classId}                 Secured.classroom
+POST    /createClass                       		    Secured.createClass
+POST    /setArchiveId                       		Unsecured.setClassArchiveId
+POST    /setVideoOffset                      		Unsecured.setClassVideoOffset
+
+GET     /downloadArchive/{classId}					Unsecured.downloadClassArchives
+GET     /getClassEnded/{classId}					Unsecured.getClassEnded
+GET     /setClassEnded/{classId}					Unsecured.setClassEnded
+GET     /getClassArchive/{classId}					Unsecured.getClassArchive
+POST    /payJson                            		Secured.payJson
+
+POST    /s3File                            			Unsecured.uploadFileS3
+GET    /s3/{fileName}                      			Unsecured.getS3File
+POST    /saveTextPdf                       			Unsecured.saveTextPdf
+
+
+
+# Ignore favicon requests
+GET     /favicon.ico                            	404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                staticDir:public
+
+# Catch all
+*       /{controller}/{action}                  {controller}.{action}

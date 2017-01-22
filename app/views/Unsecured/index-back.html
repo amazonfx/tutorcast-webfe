@@ -1,0 +1,54 @@
+
+
+#{include 'base/header.html' /}
+
+<title>Tutorcast - Classroom</title>
+
+
+<script type="text/javascript">
+// $j(document).ready(function(){
+// 	$j('#createButton').click(function () {
+// 		$j.ajax({
+// 		    url: "/createClass",
+// 		    type: "post",
+// 		    data: {
+// 		        'studentList[0]' : 10,
+// 		        'studentList[1]' : 11,
+// 		        'studentList[2]' : 12,
+// 		        'studentList[3]' : 13,
+// 		        'studentList[4]' : 14,
+// 		        'studentList[5]' : 15,
+// 		        'studentList[6]' : 16,
+// 		        'studentList[7]' : 17,
+// 		        'studentList[8]' : 18,
+// 		        'studentList[9]' : 19,
+// 		        teacherID: 1,
+// 		        isPublic : true,
+// 		        className : 'Tim Test Class 1',
+// 		        startTime : 1345655760,
+// 		        endTime : 1445655760
+// 		    },
+// 		    success: function(response) {
+// 		        window.location = response.url;
+// 		    }
+// 		});
+
+// 	});
+
+// });
+
+</script>
+</head>
+
+<body>
+
+<!--  <div id="createButton" style="width:100px;height:100px">create class</div>-->
+<a style="color:white" href="/fbLogin"><span style="color:white">Facebook Login</span></a>
+
+<a style="color:white" href="@{UserManagement.facebookRegister()}"><span style="color:white">FACEBOOK REGISTER</span></a>
+<a style="color:white" href="@{UserManagement.userRegistrationPage()}"><span style="color:white">REGISTER</span></a>
+
+<a style="color:white" href="@{SecurityController.login()}"><span style="color:white">Login</span></a>
+<a style="color:white" href="@{SecurityController.logout()}"><span style="color:white">Logout</span></a>
+</body>
+</html>

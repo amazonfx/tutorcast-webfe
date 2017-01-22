@@ -1,0 +1,204 @@
+ #{include 'base/header.html' /}
+<title>Teacher Information</title>
+<script type="text/javascript"
+	src="/public/javascripts/ext/jquery.validate.js"></script>
+
+<script>
+	
+	$j(document).ready(function() {
+		$j('#profilePic').attr('src', $j('#photoUrlMedium').attr('value'));
+		$j('#registerSubmit').click(function(e){
+			if ($j("#registerForm").valid()){
+				$j("#registerForm").submit();
+			}
+		});	
+		
+		$j('#skipTeacherInfo').click(function(e){
+			e.stopPropagation();
+			e.preventDefault();
+			window.location="@{UserManagement.skipTeacherInfo()}";
+		});	
+		var firstName = "${firstName}";
+		var lastName = "${lastName}";
+		var location = "${location}";
+		$j('#registerForm').hide();
+        $j('#prefilled').hide();
+        $j('#enterManual').click(function(e){
+				marker = $j('<span />').insertBefore('#firstName');
+				$j('#firstNameLabel').show();
+				$j('#norequire').hide();
+	        	$j('#firstName').detach().attr('type', 'text').insertAfter(marker);
+	        	marker.remove();
+	        	$j('#firstName').addClass('required');
+	       		$j('#firstName').attr('value', firstName);
+		
+				marker = $j('<span />').insertBefore('#lastName');
+        		$j('#lastName').detach().attr('type', 'text').insertAfter(marker);
+        		marker.remove();
+        		$j('#lastNameLabel').show();
+	    		$j('#lastName').addClass('required');
+        		$j('#lastName').attr('value', lastName);
+	        
+	        	
+        		marker = $j('<span />').insertBefore('#location');
+        		$j('#location').detach().attr('type', 'text').insertAfter(marker);
+        		marker.remove();
+        		$j('#location').show();
+	    		$j('#location').addClass('required');
+        		$j('#location').attr('value', location);
+        		
+		        marker = $j('<span />').insertBefore('#school');
+		        $j('#school').detach().attr('type', 'text').insertAfter(marker);
+		        marker.remove();
+		        $j('#schoolLabel').show();
+	    		$j('#school').addClass('required');
+	    		$j('#school').attr('value', '');
+	        
+	        	marker = $j('<span />').insertBefore('#degree');
+		        $j('#degree').detach().attr('type', 'text').insertAfter(marker);
+		        marker.remove();
+		        $j('#degreeLabel').show();
+	    		$j('#degree').addClass('required');
+	    		$j('#degree').attr('value', '');
+	        
+	    	$j('#prefilled').empty();
+	        $j('#registerForm').show();
+	        $j('#prefilled').hide();	        
+	        try {
+	        	IN.User.logout();
+	        }catch (err){
+	        	console.log("SIGNOUT ERROR:");
+	        }
+        });
+	});
+	
+	
+</script>
+<script type="text/javascript" src="http://platform.linkedin.com/in.js">
+  api_key: c3jm5n88piz5
+  scope: r_fullprofile
+  onLoad: onLinkedInLoad
+</script>
+
+<script type="text/javascript">
+function onLinkedInLoad() {
+	IN.Event.on(IN, "auth", function() {
+		IN.API.Profile("me")
+	    .fields(["firstName","lastName","educations:(school-name,field-of-study,degree,start-date,end-date)"])
+	    .result(function(result) { 
+	        var me = result.values[0];
+	        var education = me.educations.values[0];
+	        console.log("ME:"+JSON.stringify(me));
+	        console.log("EDU:"+JSON.stringify(education));
+	        var marker = null;
+	        $j('#norequire').hide();
+	        if (me && me.firstName) {
+				marker = $j('<span />').insertBefore('#firstName');
+				$j('#firstNameLabel').hide();
+	        	$j('#firstName').detach().attr('type', 'hidden').insertAfter(marker);
+	        	marker.remove();
+	        	$j('#firstName').removeClass();
+	       		$j('#firstName').attr('value', me.firstName);
+	        	$j('#prefilled').append('<p><b>First Name: </b>'+me.firstName+'</p>');
+	        }
+		
+			if (me && me.lastName) {
+				marker = $j('<span />').insertBefore('#lastName');
+        		$j('#lastName').detach().attr('type', 'hidden').insertAfter(marker);
+        		marker.remove();
+        		$j('#lastNameLabel').hide();
+	    		$j('#lastName').removeClass();
+        		$j('#lastName').attr('value', me.lastName);
+        		$j('#prefilled').append('<p><b>Last Name: </b>'+me.lastName+'</p>');
+        	}
+	        
+	        
+	        if (education && education.schoolName) {
+		        marker = $j('<span />').insertBefore('#school');
+		        $j('#school').detach().attr('type', 'hidden').insertAfter(marker);
+		        marker.remove();
+		        $j('#schoolLabel').hide();
+	    		$j('#school').removeClass();
+	    	    $j('#school').attr('value', education.schoolName);
+	    	    $j('#prefilled').append('<p><b>School: </b>'+education.schoolName+'</p>');
+	        }
+	        
+	        if (education && education.degree) {
+	        	marker = $j('<span />').insertBefore('#degree');
+		        $j('#degree').detach().attr('type', 'hidden').insertAfter(marker);
+		        marker.remove();
+		        $j('#degreeLabel').hide();
+	    		$j('#degree').removeClass();
+	        	$j('#degree').attr('value', education.degree);
+	        	$j('#prefilled').append('<p><b>Degree: </b>'+education.degree+'</p>');
+	        }
+	        
+	        $j('#registerForm').show();
+	        $j('#prefilled').show();
+	        
+	    });
+	});
+}
+</script>
+</head>
+<body class="registration-body">
+#{include 'base/navbar_blank.html' /}
+	<div class="container">
+	<div style="width:100%">
+		<div class="well" style="width:400px;margin:auto;text-align:center">	
+		#{ifErrors}
+   			<h1>Oops...</h1>
+   			#{errors}
+       		<ul>
+       		<li class="validateError">${error}</li>
+       		</ul>
+  		 #{/errors}
+		#{/ifErrors}
+		<legend>Instructor Information</legend>
+		<script type="in/Login">
+		</script>
+
+		<button id="enterManual" class="btn">Enter Manually</button>
+		<pre id="prefilled">
+		</pre>
+		<pre id="norequire" style="margin-top:30px;">This information is not required if you do not wish to be listed as an instructor.</pre>
+		<form id="registerForm" action ="@{UserManagement.registerTeacher()}" method ="post">
+			
+			<div id="formBlock">
+				<label id="firstNameLabel">First Name</label> 
+				<input type="text" id="firstName" name="firstName" value="${firstName}"> <br> 
+			
+				<label id="lastNameLabel">Last Name</label> 
+				<input type="text" id="lastName" name="lastName" value="${lastName}"> <br> 
+				
+				
+
+				<label id="schoolLabel">Education - School (ex: University of Iowa)</label> 
+				<input type="text" id="school" name="school" value=""> 
+  				
+  				<label id="degreeLabel">Degree (ex: B.S, Mathematics)</label> 
+				<input type="text" id="degree" name="degree" value=""> 
+				
+				<label id="locationLabel">Location (ex: New York, NY)</label> 
+				<input type="text" id="location" name="location" value="${location}"> <br> 
+				
+				<input type="hidden" name="lv" id="lv" value="false"> 
+				
+				</div>
+				
+				<br>
+				<br>
+				<br>
+				<br>
+				<input type="hidden" name="userId"  value="${userId}">
+		</form>
+		<div>
+	  	<button id="skipTeacherInfo" class="btn">Skip</button>
+			<button type="submit" id="registerSubmit" class="btn">Submit</button>
+			</div>
+			</div>
+			</div>
+			</div>
+
+
+</body>

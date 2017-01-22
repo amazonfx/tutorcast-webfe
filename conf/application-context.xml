@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springsource.org/dtd/spring-beans-2.0.dtd">
+<beans>
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:mysql://localhost:3306/tutorcast" />
+		<property name="user" value="root" />
+		<property name="password" value="guitar12" />
+		<property name="minPoolSize" value="4" />
+		<property name="maxPoolSize" value="4" />
+		<property name="loginTimeout" value="5000" />
+		<property name="preferredTestQuery" value="SELECT 1" />
+
+		<property name="acquireRetryAttempts" value="0" />
+		<property name="acquireRetryDelay" value="3000" />
+		<property name="breakAfterAcquireFailure" value="false" />
+
+		<property name="idleConnectionTestPeriod" value="1000" />
+	</bean>
+
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="dbHelper" class="dao.DBHelper" scope="singleton">
+	</bean>
+
+	<bean id="jdbcDAO" class="dao.JDBCDao" scope="singleton">
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="txManager" />
+		<property name="dbHelper" ref="dbHelper" />
+	</bean>
+
+	<bean id="serviceLayer" class="service.ServiceLayer" scope="singleton">
+		<property name="dao" ref="jdbcDAO" />
+		<property name="config" ref="configBean" />
+	</bean>
+
+	<bean id="configBean" class="config.ConfigBean">
+		<property name="deployedUrl" value="http://www.tutorcast.tv" />
+		
+		<property name="awsAccessKey" value="AKIAICZIDKXKJDZ4GIZQ" />
+		<property name="awsSecretKey" value="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" />
+		
+		<property name="s3DocBucket" value="testdoc.tenka.com" />
+		<property name="s3DocUrl" value="http://testdoc.tenka.com" />
+		
+		<property name="cloudfrontStreaming" value="rtmp://s3rmwwdu80249l.cloudfront.net/cfx/st"></property>
+		
+		<property name="orbitHost" value="www.tutorcast.tv" />
+		<property name="orbitPort" value="9100" />
+		
+		<property name="tokKey" value="17327571" />
+		<property name="tokSecret" value="ad0d7c09d5fbe4680ff232850f32d508ceef530a" />
+		<property name="tokEndpoint" value="https://api.opentok.com" />
+		
+		<property name="fbAppID" value="356932807724352" />
+		<property name="fbAppSecret" value="a895c3e6dd22c01826ae6e7d3f87e8e7" />
+		
+		<property name="linkedinAppID" value="c3jm5n88piz5" />
+		<property name="linkedinAppSecret" value="werCCnTs1W32kh5A" />
+		
+		<property name="linkedinUserToken" value="57056da9-855b-4584-abea-98952977771a" />
+		<property name="linkedinUserSecret" value="c9005619-3c21-4c63-9617-8bd0bdc63d73" />
+		
+		<property name="freeMaxMinutes" value="80" />
+		<property name="paidMaxMinutes" value="80" />
+		
+		<property name="stripePublicKey" value="pk_E27YmDuEqIzOiU9pJs4CrgocQcdmG" />
+		<property name="stripeSecretKey" value="sk_ClOg4Wh7rfRd9dJxNNXX49gppkKDq" />
+	</bean>
+
+
+</beans>

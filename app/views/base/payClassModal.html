@@ -1,0 +1,109 @@
+<div id="payClassModal" class="modal hide fade" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static"
+	style="display: none;">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal"
+			aria-hidden="true">×</button>
+		<h4 id="myModalLabel">#{if classInProgress} You have a paid scheduled class in progress#{/ if} #{else}You have a scheduled class that requires payment#{/ else}</h4>
+		<div id="noPay" class="smallText">You DO NOT have to pay now. You will be able to preview the class for free for 10 minutes.</div>
+	</div>
+	<div class="modal-body">
+	<div class="row">
+		<div id="infoBlock" class="span5">
+			<div class=" span1"><img class="img-polaroid" src="${classPhotoUrl}"></div>
+			<div class="span2"><b>${classRegistered}</b><br>Instructor: ${teacherName} <br>Cost: <span id="payStatus">${classCost.formatCurrency('USD').raw()} </span></div>
+		</div>
+	</div>
+	<div class="row" id="payBlock">
+	<div class="offset1 span4">
+		<form action="" method="POST" id="payForm">
+ 					 <div class="form-row">
+    					<label>Card Number</label>
+    					<input type="text" size="20" name="cardnumber" autocomplete="off" class="card-number"/>
+  						</div>
+  						<div class="form-row">
+    					<label>CVC (Number on back of your card)</label>
+    					<input type="text" size="4" name="cvc" autocomplete="off" class="card-cvc"/>
+  						</div>
+  						<div class="form-row">
+    					<label>Expiration (MM/YYYY)</label>
+    					<input type="text" size="2" name="expMonth" class="input-micro card-expiry-month"/>
+    					<span> / </span>
+    					<input type="text" size="4" name="expYear" class="input-micro card-expiry-year"/>
+    					<input type="hidden"  name="classId" value="${classId}"/>
+  						</div>
+				</form>
+				<div class="smallText"><a target="_blank" href="https://stripe.com/help/security"><img src="/public/images/secure_payment.png"></a></div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button id="later" class="btn" data-dismiss="modal">Later</button>
+		<button id="payNow" class="btn">Pay Now</button>
+		<button id="paySubmit" class="btn btn-primary">Submit Payment</button>
+		<button id="goto" class=" gotoClass btn btn-primary">Go to Class</button>
+		<button id="freePreview" class="gotoClass btn btn-primary">Free Preview</button>
+	</div>
+</div>
+
+<script type="text/javascript">
+var inProgress = ${classInProgress};
+$j(document).ready(function(){
+	$j('#payClassModal').modal();
+	$j('#paySubmit').hide();
+	$j('#payBlock').hide();
+	$j('#goto').hide();
+	$j('#later').hide();
+	if (!inProgress){
+		$j('#goto').hide();
+		$j('#freePreview').hide();
+		$j('#later').show();
+		$j('#payNow').addClass("btn-primary");
+	}
+	$j('#payNow').click(function(e){
+		$j('#payNow').hide();
+		$j('#paySubmit').show();
+		$j('#payBlock').show();
+		$j('#infoBlock').hide();
+		$j('#freePreview').removeClass('btn-primary');
+	});
+	
+	$j('#paySubmit').click(function(e){
+	    $j('#paySubmit').attr('disabled','disabled');
+	    e.preventDefault();
+	    	toastr.info("Submitting payment..");
+			$j.post('/payJson', $j('#payForm').serialize())
+			.success(function(result) {
+				$j('#paySubmit').removeAttr('disabled');
+				console.log(JSON.stringify(result));
+				if (result.success){
+					toastr.success("Amount: $"+result.amount+" charged successfully");
+					if (inProgress){
+						$j('#paySubmit').hide();
+						$j('#payBlock').hide();
+						$j('#payNow').hide();
+						$j('#infoBlock').show();
+						$j('#freePreview').hide();
+						$j('#goto').show();
+						$j('#myModalLabel').text("Your class is currently in progress");
+						$j('#noPay').text("");
+						$j('#payStatus').text("paid");
+					} else {
+						$j('#payClassModal').modal('hide');
+					}
+					
+				} else {
+					toastr.error("Charge attempt failed with message:"+result.reason);
+				}
+			})
+			.error(function() {
+				$j('#paySubmit').removeAttr('disabled');
+				toastr.error("Error during payment");
+			});
+	});
+	$j('.gotoClass').click(function(e){
+		window.location='/classroom/live/${classId}';
+	});
+})
+
+</script>

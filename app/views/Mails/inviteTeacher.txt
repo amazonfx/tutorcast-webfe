@@ -1,0 +1,15 @@
+Hi ${firstname},
+
+Your class was scheduled successfully
+
+Class Name: ${className}
+
+Start Time: ${formattedTime}
+
+Link ${link}
+
+
+Invitees have been notified via email. You can check the status of this class on your dashboard.
+${dashboardLink}
+
+-Tutocast

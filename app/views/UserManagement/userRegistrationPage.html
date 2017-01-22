@@ -1,0 +1,97 @@
+ #{include 'base/header.html' /}
+<title>User Registration</title>
+<script type="text/javascript"
+	src="/public/javascripts/ext/jquery.validate.js"></script>
+<script>
+	$j(document).ready(function() {
+// 		$j("#registerForm").validate({
+// 			 submitHandler: function(form) {
+// 			   form.submit();
+// 			 }
+// 		});
+		$j('#profilePic').attr('src', $j('#photoUrlMedium').attr('value'));
+		$j('#registerSubmit').click(function(e){
+			if ($j("#registerForm").valid()){
+				$j("#registerForm").submit();
+			}
+		});
+		
+		$j('#fileupload').fileupload({
+            dataType: 'json',
+            done: function (e, data) {
+            	var response = data.result;
+            	console.log("response:"+JSON.stringify(data.result));
+            	$j('#photoUrlLarge').attr('value', response.large);
+            	$j('#photoUrlMedium').attr('value', response.medium);
+            	$j('#photoUrlSmall').attr('value', response.small);
+            	$j('#photoUrlSquare').attr('value', response.square);
+            	$j('#profilePic').attr('src', $j('#photoUrlMedium').attr('value'));
+            	toastr.success("Picture uploaded successfully");   
+            },
+            
+            fail: function (e, data) {
+            	toastr.error("An error occurred while uploading your file. Please try again");
+            },
+            
+            add: function (e, submitData) {
+            	toastr.info("Uploading your picture"); 
+                submitData.submit();
+            }
+        });
+	});
+</script>
+</head>
+<body class="registration-body">
+#{include 'base/navbar_blank.html' /}
+	<div class="container">
+		<div style="width:100%">
+		<div class="well" style="width:400px;margin:auto;text-align:center">
+		#{ifErrors}
+   			<h1>Oops...</h1>
+   			#{errors}
+   			<ul>
+       		<li class="validateError">${error}</li>
+       		</ul>
+  		 #{/errors}
+		#{/ifErrors}
+		<a href="/fbRegister#{if classId }/${classId} #{/ if}" class="btn btn-primary btn-large"><i class="icon-white icon-user"></i> Register Using Facebook</a>
+	    <div style="margin-top:20px">Or</div>
+	
+		<form id="registerForm" action ="@{UserManagement.registerUser()}" method ="post">
+			<legend>User Registration</legend>
+				#{ifnot firstName}
+				<label>First Name</label> 
+				<input type="text" name="firstName" class="required" value=""> <br>
+				<label>Last Name</label> 
+				<input type="text" name="lastName" class="required" value=""> <br>
+				#{/ifnot}
+				<label>Your Email</label> 
+				<input type="text" name="userEmail" class="required email" value="${userEmail}"> <br> 
+				<label>Pick a username</label> 
+				<input type="text" name="userName" class="required" value="${userName}"> <br> 
+				<label>Pick a password(6 or more characters)</label> 
+				<input type="password" class="required" minlength="6" name="password" value=""> <br> 
+				
+				<label>Profile Picture</label> 
+				<img class="img-polaroid" id="profilePic" src=""></img>
+				<div class="btn fileinput-button">
+					Upload New<input id="fileupload" type="file" name="file" data-url="@{Unsecured.uploadImageS3()}">
+				</div> 
+				
+  				
+				<br>
+				<br>
+				<br>
+				<br>
+				<input type="hidden" name="userId"  value="${userId}">
+				<input type="hidden" name="photoUrlLarge" id="photoUrlLarge" value="${photoUrlLarge}">
+				<input type="hidden" name="photoUrlMedium" id="photoUrlMedium" value="${photoUrlMedium}">
+				<input type="hidden" name="photoUrlSmall" id="photoUrlSmall" value="${photoUrlSmall}">
+				<input type="hidden" name="photoUrlSquare" id="photoUrlSquare" value="${photoUrlSquare}">
+			<button type="submit" id="registerSubmit" class="btn">Submit</button>
+		</form>
+	</div>
+	</div>
+	</div>
+
+</body>

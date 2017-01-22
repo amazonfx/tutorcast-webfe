@@ -1,0 +1,432 @@
+ #{include 'base/header.html' /}
+<title>Tutorcast</title>
+<script type="text/javascript" src="/public/bootstrap/js/bootstrap-timepicker.js"></script>
+<script type="text/javascript" src="/public/bootstrap/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/public/javascripts/ext/jquery.tagging.js"></script>
+<script type="text/javascript"
+	src="/public/javascripts/ext/jquery.validate.js"></script>
+<script type="text/javascript"
+	src="/public/javascripts/ext/jquery.timeago.js"></script>
+<script type="text/javascript">
+var GlobalConstants = {currentPage:0, pageSize:8, lastPage:false, totalPages:1};
+function createFormReset() {
+	$j('#tagBlock').hide();
+	$j('#descBlock').hide();
+	$j('#scheduleBlock').hide();
+	$j('#hideAddDesc').hide();
+	$j('#hideAddTags').hide();
+	$j('#whoBlock').hide();
+	$j('#costBlock').hide();
+}
+function loadClassesForPage(page){
+	$j.ajax({
+	 url: '/recentClasses',
+	 method: 'get',
+	 data: {
+		 pageSize:GlobalConstants.pageSize,
+		 pageNumber:page
+	 },
+	 success: function(data) {
+		console.log(JSON.stringify(data));
+		GlobalConstants.currentPage = data.currentPage;
+		GlobalConstants.totalPages = data.totalPages;
+		$j('#currentPage').text(data.currentPage+1);
+		$j('#totalPages').text(data.totalPages);
+		$j('#classList').empty();
+		$j.each(data.classes, function(index, value) { 
+			var li = $j('<div class="classWidget"></div>');
+			var elem = $j('#classTemplate').children(":first").clone();
+			elem.find('.classPictureImg').attr('src', value.classPhotoUrl);
+			elem.find('.classPictureImg').click(function(e) {
+				window.location = '/classroom/replay/'+value.classId;
+			});
+			elem.find('.title').text(value.className);
+			elem.find('title').css('min-height','41px');
+			var description = "No description given";
+			if (value.description){
+				description = value.description;
+			}
+			elem.find('.desc').text(description);
+			elem.find('.profileImg').attr('src', value.profilePic);
+			elem.find('.teacherName').text(value.firstName+' '+value.lastName);
+			elem.find('.dateStamp').text($j.timeago(value.startTime*1000));
+			var tagList = data.tags[value.classId];
+			var oldTags="";
+			 var insertedCount = 0;
+			$j.each(tagList, function(index, v) { 
+				if (v.tag.length > 0){
+					if(insertedCount < 3){
+						++insertedCount;
+						elem.find('.tagBlock').append('<span style="margin-right:3px;" class="label label-info">'+v.tag+'</span>');
+					}
+					oldTags+=v.tag+",";
+				} else {
+					elem.find('.tagBlock').append('<span style="margin-right:3px;" class="label">No tags yet</span>');
+				}
+			});
+			elem.find('.existingTags').attr('value', oldTags);
+			
+			elem.find('.addTag').click(function(e){
+				elem.find('.tagInputBlock').show();
+				elem.find('.sendTag').show();
+				elem.find('.addTag').hide();
+				elem.find('.tagBlock').hide();
+			});
+			
+			elem.find('.sendTag').click(function(e){
+				elem.find('.sendTag').hide();
+				elem.find('.loading').show();
+				elem.find('.tagInputBlock').hide();
+				elem.find('.tagBlock').show();
+				$j.ajax({
+					 url: '/setClassTags',
+					 type: 'post',
+					 data: {
+						 classId:value.classId,
+						 tags:elem.find('.existingTags').attr('value')
+					 },
+					 success: function(data) {
+						 elem.find('.loading').hide();
+						 elem.find('.tagBlock').empty();
+						 elem.find('.addTag').show();
+						 var insertedTag = false;
+						 var insertedCount = 0;
+						 $j.each(data, function(index, v) { 
+							if (v.tag.length > 0 && insertedCount < 3){
+								insertedTag = true;
+								++insertedCount;
+								elem.find('.tagBlock').append('<span style="margin-right:3px;" class="label label-info">'+v.tag+'</span>');
+							}
+						 });
+						 if (!insertedTag){
+							 elem.find('.tagBlock').append('<span style="margin-right:3px;" class="label">No tags yet</span>');
+						 }
+					 },
+					 error: function(data) {
+						 elem.find('.loading').hide();
+						 elem.find('.addTag').show();
+					 }
+				});
+			});
+			li.append(elem);
+			
+			$j('#classList').append(li);
+		});
+		$j('.existingTags').tagsInput({'height':'70px', 'width':'120px'});
+	 },
+	 error: function() {
+		console.log("ERROR LOADING CLASSES");
+	 }
+	});
+}
+
+$j(document).ready(function(){
+	
+	createFormReset();
+	loadClassesForPage(GlobalConstants.currentPage);
+	$j('#prevPage').click(function(e){
+		console.log("PREV PAGE");
+		if (GlobalConstants.currentPage > 0) {
+			loadClassesForPage(GlobalConstants.currentPage-1);
+		}
+	});
+	$j('#nextPage').click(function(e){
+		console.log("NEXT PAGE");
+		if (GlobalConstants.currentPage < (GlobalConstants.totalPages - 1)) {
+			loadClassesForPage(GlobalConstants.currentPage+1);
+		}
+	});
+	
+	$j('#createSubmit').click(function(e){
+		if ($j("#createClassForm").valid()){
+			$j("#createClassForm").submit();
+		}
+	});
+	$j('#free').click(function(){
+		$j('#costBlock').hide();
+	});
+	
+	$j('#paid').click(function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		toastr.info("This feature is temporarily disabled during initial testing");
+		//$j('#costBlock').show();
+	});
+	
+	$j('#now').click(function(){
+		$j('#scheduleBlock').hide();
+		$j('#whoBlock').hide();
+	});
+	
+	
+	$j('#schedule').click(function(){
+		$j('#scheduleBlock').show();
+		$j('#whoBlock').show();
+	});
+	
+	$j('#inviteMore').click(function(){
+		$j('#whoList').append('<input type="text" name="who[]" value="" placeholder="Email of Attendee">');
+	});
+	
+	$j('#hideAddDesc').click(function(e){
+		e.preventDefault();
+		$j('#descBlock').hide();
+		$j('#hideAddDesc').hide();
+		$j('#showAddDesc').show();
+	});
+	$j('#hideAddTags').click(function(e){
+		e.preventDefault();
+		$j('#tagBlock').hide();
+		$j('#hideAddTags').hide();
+		$j('#showAddTags').show();
+	});
+	$j('#showAddDesc').click(function(e){
+		e.preventDefault();
+		$j('#descBlock').show();
+		$j('#hideAddDesc').show();
+		$j('#showAddDesc').hide();
+	});
+	$j('#showAddTags').click(function(e){
+		e.preventDefault();
+		$j('#tagBlock').show();
+		$j('#hideAddTags').show();
+		$j('#showAddTags').hide();
+	});
+	$j('#tags').tagsInput({'height':'70px', 'width':'224px'});
+	$j('#dp1').datepicker().on('hide', function(ev){
+	    ev.stopPropagation();
+	    ev.preventDefault();
+	    return false;
+	    });
+	$j('.timepicker-default').timepicker().on('hide', function(ev){
+	    ev.stopPropagation();
+	    ev.preventDefault();
+	    return false;
+	});
+	$j('#fileupload').fileupload({
+        dataType: 'json',
+        done: function (e, data) {
+        	var response = data.result;
+        	console.log("response:"+JSON.stringify(data.result));
+        	$j('#photoUrlLarge').attr('value', response.large);
+        	$j('#photoUrlMedium').attr('value', response.medium);
+        	$j('#photoUrlSmall').attr('value', response.small);
+        	$j('#photoUrlSquare').attr('value', response.square);
+        	$j('#classPic').attr('src', $j('#photoUrlMedium').attr('value'));
+        	toastr.success("Picture uploaded successfully");   
+        },
+        
+        fail: function (e, data) {
+        	toastr.error("An error occurred while uploading your file. Please try again");
+        },
+        
+        add: function (e, submitData) {
+            submitData.submit();
+        }
+    });
+	#{if classCreated }
+		var className = "${classCreated}";
+		toastr.success("Your class: "+className+" was created successfully and invitees have been notified via email. You can view all your current classes from your dashboard."); 
+	#{/if}
+	
+});
+</script>
+</head>
+<body class="lightBody classLanding">
+	#{include 'base/navbar.html' /}
+	<div class="container">
+	<div class="well" style="width:885px;margin:auto;background:white;border:none">
+	<div class="pull-left">
+				<button type="button" class="btn btn-small btn-primary" data-toggle="modal" data-target="#myModal"><i class="icon-play-circle icon-white"></i>  Start New Class</button>
+	</div>
+	
+	<div style="margin-right:16px" class="pull-right">			
+			<button id="prevPage" class="btn btn-small"><i class=" icon-chevron-left"></i></button>
+			<button id="nextPage" class="btn btn-small"><i class=" icon-chevron-right"></i></button>
+			<span id="statusBar" class="page-status ">Page <span id="currentPage">1</span >/<span id="totalPages">1</span></span>
+	</div>
+	<div class="clearfix"></div>
+	<div class="line-separator"></div>
+		<div>
+				<b>Recent Public Classes</b>
+		</div>
+	#{include 'base/browseClassWidget.html' /}
+	<div id="classList" >
+		
+	</div>
+		
+	</div>
+	</div>
+		<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none; ">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h4 id="myModalLabel">New Class</h4>
+              <div class="smallText">During the closed beta period class duration is limited to a maximum of 80 minutes</div>
+            </div>
+            <div class="modal-body">
+            
+            <form id="createClassForm" action="@{Secured.createClass}" method="post" class="form-horizontal">
+            <div class="highlight">
+            <div class="control-group">
+              <label class="control-label"  for="className">Class Name:</label>
+              <div class="controls">
+                <input type="text" id="className" class="required" name="className" value="" placeholder="Enter Class Name">
+              </div>
+            </div>
+            
+            <div class="control-group">
+             <label class="control-label">This Class Is:</label>
+              <div class="controls">
+                <label class="radio inline">
+                 <input type="radio"  name="charge" id="free" value="free" checked> Free
+                </label>
+                <label class="radio inline">
+                 <input type="radio" name="charge" id="paid" value="paid"> I want to charge for this class.
+                </label>
+              </div>
+            </div>
+            
+            <div id="costBlock" class="control-group">
+              <label class="control-label" for="who">Cost:</label>
+              <div class="controls">
+              <div id="costBlock">
+              	<input type="text" name="cost" value="" class="number" min="5" placeholder="Ex: 40.00">
+ 			  </div>
+                <p>Tutorcast will handle payment request and payment processing for you. Payments are processed via <a style="color:blue" href="http://stripe.com">Stripe.</a></p>
+				<p>Tutorcast assesses a 15% service charge on paid classes.</p>
+				
+              </div>
+            </div>
+            <div class="control-group">
+             <label class="control-label">Class Starts:</label>
+              <div class="controls">
+                <label class="radio inline">
+                 <input type="radio"  name="when" id="now" value="now" checked> Now
+                </label>
+                <label class="radio inline">
+                 <input type="radio" name="when" id="schedule" value="schedule"> Schedule and Invite
+                </label>
+ 
+              </div>
+            </div>
+            <div id="scheduleBlock">
+            <div class="control-group">
+              <label class="control-label"></label>
+              <div class="controls">
+                <div class="input-append date" id="dp1" data-date="${today}" data-date-format="mm-dd-yyyy">
+  					<input type="text"  data-date="${today}" data-date-format="mm-dd-yyyy" id="dateField" name="dateField" class="input-small" value="${today}" placeholder="Pick Date">
+  					<span class="add-on"><i class="icon-th"></i></span>
+				</div>
+                <div class="input-append bootstrap-timepicker-component">
+    				<input type="text" name="timeField" class="timepicker-default input-small">
+    					<span class="add-on">
+        					<i class="icon-time"></i>
+    					</span>
+				</div>
+				
+				<div id="timezoneBlock">
+					<select name="timezone">
+  						<option value="EST" selected>US Eastern Time</option>
+ 						<option value="CST">US Central Time</option>
+  						<option value="MST">US Mountain Time</option>
+  						<option value="PST">US Pacific Time</option>
+					</select>
+				</div>
+				
+              </div>
+            </div>
+            </div>
+            
+            <div id="whoBlock" class="control-group">
+              <label class="control-label" for="who">Who:</label>
+              <div class="controls">
+              	<div id="whoList">
+                	<input type="text" class="email" name="who[]" value="" placeholder="Email of Attendee">
+                </div>
+                <a id="inviteMore" href="#">Invite More</a>
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label" for="who">Picture:</label>
+              <div class="controls">
+                <img class="img-polaroid" id="classPic" src="${photoUrlMedium}"></img>
+				<div class="btn fileinput-button">
+					Upload New<input id="fileupload" type="file" name="file" data-url="@{Unsecured.uploadImageS3()}">
+				</div>
+				<input type="hidden" name="photoUrlLarge" id="photoUrlLarge" value="${photoUrlLarge}"> 
+				<input type="hidden" name="photoUrlMedium" id="photoUrlMedium" value="${photoUrlMedium}">
+				<input type="hidden" name="photoUrlSmall" id="photoUrlSmall" value="${photoUrlSmall}">
+				<input type="hidden" name="photoUrlSquare" id="photoUrlSquare" value="${photoUrlSquare}">
+              </div>
+            </div>
+            </div>
+            <div class="control-group">
+              <div class="controls">
+               <label class="checkbox">
+    			<span class="smallText"><input type="checkbox" name="isPublic" checked>Make this class public</span>
+ 				 </label>
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <div class="controls">
+              <div>
+               <a id="showAddDesc" href="#">(Optional) Add Class Description...</a>
+               <a id="hideAddDesc" href="#">(Optional) Add Class Description..</a>
+               </div>
+               <div id="descBlock">
+               	<textarea rows="3" name="desc" placeholder="Enter Class Description"></textarea>
+               </div>
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <div class="controls">
+              <div>
+               <a id="showAddTags" href="#">(Optional) Add Tags (ex:Algebra)...</a>
+               <a id="hideAddTags" href="#">(Optional) Add Tags (ex:Algebra)...</a>
+               </div>
+               <div id="tagBlock">
+               	<input name="tags" id="tags" class="input-medium" value="" />
+               </div>
+              </div>
+            </div>
+            
+            
+          </form>
+              
+            </div>
+            <div class="modal-footer">
+              <button class="btn" data-dismiss="modal">Cancel</button>
+              <button id="createSubmit" class="btn btn-primary">Done</button>
+            </div>
+          </div>
+
+
+	#{if classInProgress }
+		#{if classPaid || classCost <= 0 }
+			#{include 'base/freeClassModal.html' /}
+		#{/ if}
+		#{else}
+			#{include 'base/payClassModal.html' /}
+		#{/ else}
+		
+	#{/ if}
+	
+	#{elseif className }
+			<script type="text/javascript">
+				$j(document).ready(function(e){
+					toastr.info("You class: ${className} was successfully scheduled. You can see a full list from your dashboard");			
+				});
+			</script>
+	#{/ elseif}
+	</div>
+
+	<script type="text/javascript">
+document.write('<scr' + 'ipt src="' + document.location.protocol + '//fby.s3.amazonaws.com/fby.js?100"></scr' + 'ipt>');
+</script>
+	<script type="text/javascript">
+FBY.showTab({id: '3155', position: 'right', color: '#292526'});
+</script>
+</body>

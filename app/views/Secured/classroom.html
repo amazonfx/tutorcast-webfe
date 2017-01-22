@@ -1,0 +1,284 @@
+ #{include 'base/header.html' /}
+<title>Tutorcast - Classroom</title>
+<meta name="viewport"
+	content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+<link rel="stylesheet" href="/public/stylesheets/classroom.css"
+	type="text/css" media="screen, projection" />
+
+<!--
+Load Canvas support for IE8. ExplorerCanvas courtesy Google. 
+See: http://code.google.com/p/explorercanvas/
+-->
+<!--[if lt IE 9]>
+<script src="excanvas.js"></script>
+<![endif]-->
+
+
+<script type="text/javascript">
+	var GlobalConstants = {videoOffset: ${videoOffset}, stripeKey: "${stripeKey}", isTeacher: ${isTeacher}, paid: ${paid}, userEmail:'${userEmail}', orbitHost:'${orbitHost}', orbitPort:${orbitPort}, teacherID:${teacherID}, roomID:'${roomId}', firstName:'${firstName}', userID:${userId}, archiveId:'${archiveId}', tokToken:'${tokToken}', tokSession:'${tokSession}', roomName: '${roomName}', profilePic: '${profilePic}', replayMode:${isReplay}, pendingUserList: ${pendingUserList.raw()}, registeredUserList: ${registeredUserList.raw()}, materialList:${materialList.raw()}};
+</script>
+#{if isReplay}
+<script src="/public/javascripts/ext/flowplayer-3.2.11.min.js"></script>
+#{/if}
+<script src="http://static.opentok.com/v0.91/js/TB.min.js"></script>
+
+<script src="/public/javascripts/ace/easysync.js"></script>
+
+<script src="/public/javascripts/ext/pdf.js"></script>
+
+
+<script src="/public/javascripts/tutorcast/Helper.js"
+	type="text/javascript"></script>
+	
+<script src="/public/javascripts/ext/jquery.chatbox.js"
+	type="text/javascript"></script>
+<script type="text/javascript"
+	src="/public/javascripts/ext/jquery.validate.js"></script>
+<script type="text/javascript"
+	src="/public/javascripts/ext/bootbox.js"></script>
+<script type="text/javascript" src="https://js.stripe.com/v1/"></script>	
+<script type="text/javascript">
+    Stripe.setPublishableKey(GlobalConstants.stripeKey);
+</script>
+		
+<script src="/public/javascripts/ext/OT_LayoutContainer.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/ChangesetManager.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/VideoManager.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/TextEditor.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/PDFManager.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/BoardPlayback.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/Pen.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script src="/public/javascripts/tutorcast/Board.js"
+	type="text/javascript" charset="${_response_encoding}"></script>
+<script type="text/javascript">
+	$j(document).ready(function() {
+		   var board = new Board("container", "boardControl", "videoContainer", 816, 1056);
+		   if (!GlobalConstants.paid){
+			   $j('#payButton').show();
+		   } else {
+			   $j('#payButton').hide();
+		   }
+		   $j('#participantBody').hide();
+		   $j('.inviteBlock').hide();
+		   $j('.inviteMore').click(function(e){
+			   $j('#participantBody').hide();
+		   });
+		   $j('#inviteAdd').click(function(){
+				$j('#whoList').append('<input type="text" name="who[]" value="" placeholder="Email of Attendee">');
+		   });
+		   
+		   if (GlobalConstants.isTeacher){
+			   $j('#participantBody').show(); 
+			   $j('.inviteBlock').show();
+		   }
+		   $j('#inviteSubmit').click(function(e){
+				if ($j("#inviteForm").valid()){
+					$j.post('/inviteClassUser', $j('#inviteForm').serialize())
+					.success(function(result) {
+						toastr.success("Invitees have been notified via email");
+							$j.each(result, function(index, value) { 
+								$j('#pendingBlock').append('<li>'+value+'</li>');
+								$j('#pendingParticipant').show();
+							});	
+						$j('#myModal').modal('hide');
+					})
+					.error(function() {
+								toastr.error("Error occurred during invite. Please try again");
+					});
+				}
+			});
+		   
+		   $j('#paySubmit').click(function(e){
+			    $j('#paySubmit').attr('disabled','disabled');
+			    e.preventDefault();
+			    	toastr.info("Submitting payment..");
+					$j.post('/payJson', $j('#payForm').serialize())
+					.success(function(result) {
+						$j('#paySubmit').removeAttr('disabled');
+						console.log(JSON.stringify(result));
+						if (result.success){
+							toastr.success("Amount: $"+result.amount+" charged successfully");
+							$j('#payModal').modal('hide');
+							board.paySuccess(board);
+						} else {
+							toastr.error("Charge attempt failed with message:"+result.reason);
+						}
+					})
+					.error(function() {
+						$j('#paySubmit').removeAttr('disabled');
+						toastr.error("Error during payment");
+					});
+			});
+		   
+		   $j('#participantToggle').click(function(e){
+			   if($j('#participantBody').is(':visible')){
+				   $j('#participantBody').hide();
+			   } else {
+				   $j('#participantBody').show();
+			   }
+		   });
+		   $j('#pendingParticipant').hide();
+		   $j.each(GlobalConstants.pendingUserList, function(index, value) { 
+			  	$j('#pendingBlock').append('<li>'+value.email+'</li>');
+			  	$j('#pendingParticipant').show();
+		   });
+		   
+		   $j.each(GlobalConstants.registeredUserList, function(index, value) { 
+			   if (value.email != GlobalConstants.userEmail){
+				   $j('#pendingBlock').append('<li>'+value.email+'</li>');
+				   $j('#pendingParticipant').show();  
+			   }
+		   });
+		   
+		   $j("#payment-form").submit(function(event) {
+			    // disable the submit button to prevent repeated clicks
+			    $j('.submit-button').attr("disabled", "disabled");
+
+			    Stripe.createToken({
+			        number: $j('.card-number').val(),
+			        cvc: $j('.card-cvc').val(),
+			        exp_month: $j('.card-expiry-month').val(),
+			        exp_year: $j('.card-expiry-year').val()
+			    }, stripeResponseHandler);
+
+			    // prevent the form from submitting with the default action
+			    return false;
+			});
+	});
+</script>
+</head>
+<body>
+	 #{include 'base/navbar.html' /}
+	<div class="container">
+		
+		#{include 'base/classroom_board_templates.html' /}
+		<div class="row">
+				
+			<div class="span4">
+				<div id="videoContainer" class="pull-right"
+					style="position: relative;">
+					<div id ="payButton" class="btn btn-small btn-danger" data-toggle="modal" data-target="#payModal">Pay for Class</div>
+					
+					<div id="teacherContainer" style="position: relative"></div>
+					<div id="studentContainer" style="position: relative"></div>
+					<div id="archiveContainer" style="position: relative"></div>
+				</div>
+			</div>
+			<div class="span8">
+				<div class="pull-left">
+					<div id="boardControl" style="position: relative"></div>
+					<div id="container" style="position: relative"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="chatDiv"></div>
+	<div id="participantWrap">
+	<div id="participantToggle"><i class="icon-user icon-white"></i><span style="margin-left:4px;">Class Participants</span><span class="caret"></span></div>
+	<div id="participantBody">
+		<div id="activeParticipant"><b>Active Participants</b>
+		<ul id="activeBlock">
+		</ul>
+		</div>
+		<div id="pendingParticipant"><b>Pending Participants</b>
+			<ul id="pendingBlock">			
+			</ul>
+		</div>
+		<div class="inviteBlock modal-footer">
+			<div  class="inviteMore btn btn-small btn-inverse pull-right" data-toggle="modal" data-target="#myModal">Invite More</div>
+		</div>
+	</div>
+	</div>
+	
+		
+	<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none; ">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h4 id="myModalLabel">Invite Participants</h4>
+            </div>
+            <div class="modal-body">
+            
+            <form id="inviteForm" action="@{Secured.createClass}" method="post" class="form-horizontal">
+            <input type="hidden" name="teacherEmail" value="${userEmail}">
+             <input type="hidden" name="classId" value="${roomId}">
+            <div id="whoBlock" class="control-group">
+              <label class="control-label" for="who">Who:</label>
+              <div class="controls">
+              	<div id="whoList">
+                	<input type="text" class="email" name="who[]" value="" placeholder="Email of Attendee">
+                </div>
+                <a id="inviteAdd" href="#">Invite More</a>
+              </div>
+            </div>
+          </form>
+              
+            </div>
+            <div id="inviteBlock" class="modal-footer">
+              <button class="btn" data-dismiss="modal">Cancel</button>
+              <button id="inviteSubmit" class="btn btn-primary">Done</button>
+            </div>
+          </div>
+
+
+	<div id="loadingModal" class="modal hide fade" tabindex="-1"
+		role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" style="width:243px;margin-left:-158px">
+		<div class="modal-body" >
+		    
+			<div class="" style="font-family:lato;text-align:center">Loading... <br><img src="/public/images/ajax-loader-small.gif" /></div>
+		</div>
+	</div>
+	
+
+
+	<div id="payModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none; ">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h4 id="myModalLabel">Pay for Class</h4>
+              <h6 id="myModalLabel">Cost for this session: ${cost.formatCurrency('USD').raw()}</h6>
+            </div>
+            <div class="modal-body">
+            <div class="row" id="payBlock">
+			<div class="offset1 span4">
+              	<form action="" method="POST" id="payForm">
+ 					 <div class="form-row">
+    					<label>Card Number</label>
+    					<input type="text" size="20" name="cardnumber" autocomplete="off" class="card-number"/>
+  						</div>
+  						<div class="form-row">
+    					<label>CVC (Number on back of your card)</label>
+    					<input type="text" size="4" name="cvc" autocomplete="off" class="card-cvc"/>
+  						</div>
+  						<div class="form-row">
+    					<label>Expiration (MM/YYYY)</label>
+    					<input type="text" size="2" name="expMonth" class="input-micro card-expiry-month"/>
+    					<span> / </span>
+    					<input type="text" size="4" name="expYear" class="input-micro card-expiry-year"/>
+    					<input type="hidden"  name="classId" value="${roomId}"/>
+  						</div>
+  						<div class="smallText" style="margin-bottom:8px;"><a target="_blank" href="https://stripe.com/help/security"><img src="/public/images/secure_payment.png"></a></div>
+  						
+  						 <button class="btn" data-dismiss="modal">Cancel</button>
+  						 <button id="paySubmit" class="btn btn-primary submit-button">Submit Payment</button>
+				</form>
+        	</div>
+        	</div>
+        	</div>
+      </div>
+      
+      
+      	<script type="text/javascript">
+document.write('<scr' + 'ipt src="' + document.location.protocol + '//fby.s3.amazonaws.com/fby.js?100"></scr' + 'ipt>');
+</script>
+	<script type="text/javascript">
+FBY.showTab({id: '3155', position: 'right', color: '#292526'});
+</script>
+      
+</body>
+</html>

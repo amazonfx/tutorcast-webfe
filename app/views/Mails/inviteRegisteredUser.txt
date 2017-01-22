@@ -1,0 +1,14 @@
+Hi there,
+
+${fullname} has invited you to a collaboration session on Tutorcast.
+
+Class Name: ${className}
+
+Start Time: ${formattedTime}
+
+
+Class Details
+
+${link}.
+
+-Tutocast

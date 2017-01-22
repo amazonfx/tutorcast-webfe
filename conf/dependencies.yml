@@ -1,0 +1,15 @@
+# Application dependencies
+
+require:
+    - play
+    - play -> spring 1.0.3
+    - net.java.dev.jets3t -> jets3t 0.9.0
+    - com.google.guava -> guava 13.0
+    - com.restfb -> restfb 1.6.11
+    - com.stripe -> stripe-java 1.0.14
+repositories:
+    - jets3t:
+        type: iBiblio
+        root: "http://www.jets3t.org/maven2/"
+        contains:
+            - net.java.dev.jets3t -> *

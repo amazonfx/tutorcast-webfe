@@ -1,0 +1,103 @@
+//chatbox styles
+
+.ui-chatbox {
+	min-width:242px;
+    position: fixed;
+    bottom:0;
+    padding: 0px;
+    background:  #111;
+    z-index:99999;
+    border: 1px solid #222;
+    border: 1px solid  rgba(0, 0, 0, .05);
+	-webkit-box-shadow: 0px 0px 15px #000;
+  	-moz-box-shadow:    0px 0px 15px #000;
+  	box-shadow:         0px 0px 15px #000;
+  	.ui-chatbox-input-focus {
+   		 border: 1px solid @gray;
+   		-moz-box-shadow: inset 0px 0px 4px @gray;
+		-webkit-box-shadow: inset 0px 0px 4px @gray;
+		box-shadow: inset 0px 0px 4px @gray;
+	}
+	
+}
+
+.ui-chatbox-titlebar {
+	font-size:14px;
+	font-weight:normal;
+    padding: 3px 3px 3px 3px;
+    position:relative;
+    height: 20px;
+    .buttonBackground(@navbarInverseBackgroundHighlight, @navbarInverseBackground);
+    cursor:pointer;
+    .ui-state-hover {
+    
+    }
+}
+
+
+.ui-chatbox-content {
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+    border: 0px;
+}
+
+.ui-chatbox-log {
+    padding: 3px 3px 0px 3px;
+    height: 150px;
+    overflow-y: auto;
+    background: #FFFFFF;
+    border-bottom:none;
+    word-wrap: break-word;
+    max-width:242px;
+}
+
+.ui-chatbox-input {
+    padding: 3px 3px 3px 3px;
+    border-top: 1px solid #EEE;
+    border-top: 1px inset rgba(0, 0, 0, .20);
+    -moz-box-shadow: 0 -1px 2px rgba(0, 0, 0, .20) inset;
+	-webkit-box-shadow: 0 -1px 2px rgba(0, 0, 0, .20) inset;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, .20) inset;
+    overflow: hidden;
+    /* background: #FFFFFF; */
+}
+
+.ui-chatbox-input-box {
+    margin: 5px 5px 5px 5px;
+    //border: 1px solid @gray;
+    -moz-box-shadow: inset 0px 0px 1px @gray;
+	-webkit-box-shadow: inset 0px 0px 1px @gray;
+	box-shadow: inset 0px 0px 1px @gray;
+    /* padding:5px 5px 5px 5px; */
+    height: 35px;
+}
+
+.ui-chatbox-icon {
+    float: right;
+}
+
+
+
+.ui-chatbox-msg {
+    float: left;
+    clear: both;
+}
+
+.pending-chats {
+	background-image:url('/public/images/redcircle.png');
+	background-repeat: no-repeat;
+	position:absolute;
+	top:-15px;
+	left:-15px;
+	height:26px;
+	width:26px;
+	text-align:center;
+	padding-top:2px;
+}
+
+
+#pending-count {
+	font-weight:bold;
+}
+
+//end chatbox

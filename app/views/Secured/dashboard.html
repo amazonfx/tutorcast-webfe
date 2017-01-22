@@ -1,0 +1,274 @@
+ #{include 'base/header.html' /}
+<title>Tutorcast</title>
+<!--[if lt IE 9]>
+          <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+<link href="/public/profile/css/bootstrap.css" rel="stylesheet">
+<link href="/public/profile/css/style.css" rel="stylesheet">
+<link href="/public/profile/css/print.css" rel="stylesheet"
+	media="print">
+<link href="/public/profile/css/fullcalendar.css" rel="stylesheet">
+<script type="text/javascript" src="/public/profile/js/jqueryui.js"></script>
+<script type="text/javascript" src="/public/profile/js/fullcalendar.js"></script>
+<!--[if IE 6]><script type="text/javascript" src="http://deathtoie6.com/ie6-not-supported.js" ></script><![endif]-->
+<script>
+			var GlobalConstants = {userId: ${userId}, attendedCurrentPage:0, attendedPageSize:3, attendedLastPage:false, attendedTotalPages:1,taughtCurrentPage:0, taughtPageSize:3, taughtLastPage:false, taughtTotalPages:1};
+			
+			
+			function loadAttendedClassesForPage(page){
+				$j.ajax({
+				 url: '/attendedClasses',
+				 method: 'get',
+				 data: {
+					 pageSize:GlobalConstants.attendedPageSize,
+					 pageNumber:page,
+					 userId:GlobalConstants.userId
+				 },
+				 success: function(data) {
+					GlobalConstants.attendedCurrentPage = data.currentPage;
+					GlobalConstants.attendedTotalPages = data.totalPages;
+					if (data.ended) {
+						console.log("hiding attend");
+						$j('.attendedMore').hide();
+					}
+					
+					$j.each(data.classes, function(index, value) { 
+						var elem = $j('#classTemplate').children(":first").clone();
+						
+						elem.find('.title').text(value.className);
+						elem.find('.title').click(function(e){
+							window.location = '/classroom/replay/'+value.classId;
+						});
+						$j('#attendedClasses').append(elem.find('.titleWrap'));
+						var description = "A description was not provided for this class.";
+						if (value.description){
+							description = value.description;
+						}
+						elem.find('.desc').text(description);
+						$j('#attendedClasses').append(elem.find('.descWrap'));
+						$j('.attendedMore').show();
+						
+				 });
+				 }
+				
+				});
+			}
+			
+			function loadTaughtClassesForPage(page){
+				$j.ajax({
+				 url: '/taughtClasses',
+				 method: 'get',
+				 data: {
+					 pageSize:GlobalConstants.taughtPageSize,
+					 pageNumber:page,
+					 userId:GlobalConstants.userId
+				 },
+				 success: function(data) {
+					GlobalConstants.taughtCurrentPage = data.currentPage;
+					GlobalConstants.taughtTotalPages = data.totalPages;
+					if (data.ended) {
+						$j('.taughtMore').hide();
+					}
+					$j.each(data.classes, function(index, value) { 
+						var elem = $j('#classTemplate').children(":first").clone();
+						
+						elem.find('.title').text(value.className);
+						elem.find('.title').click(function(e){
+							window.location = '/classroom/replay/'+value.classId;
+						});
+						$j('#taughtClasses').append(elem.find('.titleWrap'));
+						var description = "A description was not provided for this class.";
+						if (value.description){
+							description = value.description;
+						}
+						elem.find('.desc').text(description);
+						$j('#taughtClasses').append(elem.find('.descWrap'));
+						$j('.taughtMore').show();
+						
+				 });
+				 }
+				
+				});
+			}
+				$j(document).ready(function(){
+					$j('#updateBtn').click(function(e){
+						toastr.info("Update profile is temporarily disabled during alpha testing");
+					});
+					$j('.taughtMore').hide();
+					$j('.taughtMore').click(function(e){
+						loadTaughtClassesForPage(GlobalConstants.taughtCurrentPage+1);
+					});
+					loadTaughtClassesForPage(GlobalConstants.taughtCurrentPage);
+					
+					$j('.attendedMore').hide();
+					$j('.attendedMore').click(function(e){
+						loadAttendedClassesForPage(GlobalConstants.attendedCurrentPage+1);
+					});
+					loadAttendedClassesForPage(GlobalConstants.attendedCurrentPage);
+					
+					$j.ajax({
+						 url: '/scheduledClasses',
+						 method: 'get',
+						 data: {
+							 userId:GlobalConstants.userId
+						 },
+						 success: function(data) {
+							 console.log("response:"+JSON.stringify(data.events));
+							 
+							 
+						 },
+						 error: function(data) {
+							 console.log("failed"+data);
+						 }
+						
+					});
+					$j('#scheduledBtn').click(function(e){
+						$j.ajax({
+							 url: '/scheduledClasses',
+							 method: 'get',
+							 data: {
+								 userId:GlobalConstants.userId
+							 },
+							 success: function(data) {
+								 console.log("response:"+JSON.stringify(data.events));
+								 $j('#myModal').modal("show");
+									$j('#myModal').on('shown', function () {
+										$j('#calendar').fullCalendar({		
+											  events:data.events,
+											  allDayDefault: false,
+											  editable: false,
+										});
+									});
+								 
+							 },
+							 error: function(data) {
+								 console.log("failed"+data);
+							 }
+							
+						});
+						
+					});
+				});
+		</script>
+</head>
+<body>
+	<div class="container" style="width: 100%; margin-top: -20px">
+		#{include 'base/profileClassListingWidget.html' /}
+		<script>
+			$j(document).ready(function(){
+				$j('#logout').tooltip();
+			});
+		</script>
+
+		<div class="navbar mainnav" style="overflow: hidden">
+			<div class="navbar-inner" style="width: 100%" ;border-bottom:1pxsolid #aaa">
+				<div class="logo pull-left"></div>
+				<div class="navblock">
+					<div class="navitem pull-right">
+						<a id="logout" rel="tooltip" data-placement="bottom"
+							data-original-title="Logout" href="/securitycontroller/logout">
+							<i class="icon-off"></i>
+						</a>
+					</div>
+
+					<div class="navitem pull-right">
+						<a href="/dashboard"><span style="color: #292526">My
+								Dashboard</span></a>
+					</div>
+
+					<div class="navitem pull-right">
+						<a href="/browseVideo"><span style="color: #292526;">Browse
+								Video</span></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+
+		<div class="span8">
+			<div class="span3">
+				<img class="thumbnail" src="${profilePic}" alt="" />
+			</div>
+			<div class="hero-unit span4">
+				<h1>${userFullName}</h1>
+				<h3 style="margin-top: 20px; margin-left: 10px">${title}</h3>
+				<p style="margin-left: 10px; margin-top: 10px;">
+					<i style="margin-top: 2px" class="icon-pencil"></i> ${degree}
+				</p>
+				<p style="margin-left: 10px">
+					<i class="icon-map-marker"></i> ${location}
+				</p>
+			</div>
+			<div class="page-header"></div>
+			<div class="page-header noPrint">
+				<h2>About Me</h2>
+
+			</div>
+			<p style="margin-top: -35px">${aboutMe}</p>
+
+
+
+			<div class="page-header">
+				<h2>Courses Taught</h2>
+				<div class="pull-right taughtMore"
+					style="font-weight: bold; cursor: pointer">More</div>
+			</div>
+
+			<p style="margin-top: -35px">Click to view recorded session.</p>
+			<dl id="taughtClasses">
+			</dl>
+
+
+
+			<div class="page-header">
+				<h2>Courses Attended</h2>
+				<div class="pull-right attendedMore"
+					style="font-weight: bold; cursor: pointer">More</div>
+			</div>
+			<p style="margin-top: -35px">Click to view recorded session.</p>
+
+			<dl id="attendedClasses">
+			</dl>
+
+		</div>
+
+		<div class="span3">
+			<h2>Contact</h2>
+			<p>
+				<i class="icon-envelope"></i> ${userEmail}
+			</p>
+			<p>
+				<i class="icon-signal"></i> ${phone}
+			</p>
+
+			<div class="btn btn-large noPrint" id="scheduledBtn"
+				style="margin-bottom: 10px; cursor: pointer">
+				<i class="icon-calendar"></i> Scheduled Classes
+			</div>
+			<div class="btn btn-large noPrint" id="updateBtn"
+				style="margin-bottom: 10px; cursor: pointer">
+				<i class="icon-th-list"></i>Update Profile
+			</div>
+		</div>
+	</div>
+
+	
+
+	<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"
+				aria-hidden="true">×</button>
+		</div>
+		<div class="modal-body">
+		   <div style="width:100%">
+			<div style="max-width: 440px;margin:auto" id="calendar"></div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		</div>
+	</div>
+</body>
+</html>

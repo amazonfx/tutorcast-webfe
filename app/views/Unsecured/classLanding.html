@@ -1,0 +1,51 @@
+ #{include 'base/header.html' /}
+<title>Tutorcast</title>
+<script type="text/javascript" src="/public/bootstrap/js/bootstrap-timepicker.js"></script>
+<script type="text/javascript" src="/public/bootstrap/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/public/javascripts/ext/jquery.tagging.js"></script>
+<script type="text/javascript"
+	src="/public/javascripts/ext/jquery.validate.js"></script>
+
+</head>
+<body class="lightBody classLanding">
+	#{include 'base/navbar.html' /}
+	<div class="container">
+		<div class="row">
+			<div class="offset2 span2 thumbnail">
+				<div class="pictureWrapper img-polaroid"">
+				<div class="classPicture">
+					<img  src="${classPhotoUrl}">
+				</div>
+				</div>
+				<div class="caption">
+				<div class="descBlock">
+					<div class="title">${className}</div>
+					<div>${description}</div>
+				</div>
+					<div class="instructorBlock ">
+						<img class="img-rounded" src="${profilePic}">
+						<div class="textBlock pull-right"><b>Instructor</b> <br> ${teacherName}</div>
+					</div>
+					<div class="tagBlock">
+					#{list items:tags, as:'tag'}
+   					 	<span class="label label-info">${tag}</span>
+					#{/list}
+					</div>
+				</div>
+			</div>
+			
+			<div class="offset1 span3">
+				<h3>${className}</h3>
+				<div class="startTimeBlock">Start Time: ${startTime}</div>
+				<div class="descriptionBlock">${description}</div>
+				
+				<div class="registerBlock">
+					<a href="/fbRegister/${classId}" class="btn btn-primary btn-large"><i class="icon-white icon-user"></i> Confirm Attendance Using Facebook</a>
+                    Or <a href="/login/${classId}" >Confirm Using My Email</a>
+                    
+				</div>
+			</div>
+		</div>
+	</div>
+	
+</body>

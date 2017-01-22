@@ -1,0 +1,122 @@
+<div id="boardTemplateBlock" style="display: none">
+	<div id="canvasWrapper">
+		<div id="editor" style="position: absolute; left: 0; top: 0;"></div>
+		<canvas id="background_canvas" class="black-shadow"
+			style="position: absolute; left: 0; top: 0; background: white"></canvas>
+		<canvas id="path_canvas" style="position: absolute; left: 0; top: 0;"></canvas>
+	</div>
+</div>
+
+<div id="filelistTemplate">
+	<div data-placement="top" data-original-title="Imported Documents List" id="filelist" class="btn dropdown-toggle" data-toggle="dropdown">
+		<span class="caret"></span>
+		</div>
+	<ul id="filelistDropdown" class="dropdown-menu pull-right">							
+</ul>
+
+</div>
+
+<div id="controlTemplateBlock" style="display: none">
+	<div>
+		#{if !isReplay}
+		<div class="navbar navbar-inverse toolbar">
+			<div class="navbar-inner black-shadow">
+				<div class="container">
+					<div class="topcontrol btn-group pull-left">
+						<div id="disableDrawing" data-placement="top" data-original-title="Text Editing Mode" class="btn">
+							<i class="icon-pencil"></i>Text
+						</div>
+						<div id="enableDrawing" data-placement="top" data-original-title="Drawing Mode" class="btn">
+							<i class="icon-tint"></i>Draw
+						</div>
+						<div data-placement="top" data-original-title="Import PDF document onto the board" class="btn fileinput-button">
+							<i class="icon-file"></i>Docs <input id="fileupload"
+								type="file" name="file" data-url="@{Unsecured.uploadFileS3()}">
+						</div>
+						
+						</div>
+					
+
+					<div class="btn-toolbar btn-toolbar2 pull-left draw-control">
+						<div id="colorSelectWrapper" data-placement="top" data-original-title="Change Brush Color" class="btn-group ">
+							<div class="btn dropdown-toggle" data-toggle="dropdown">
+								<span id="colorSelector" style="font-size: 17px; color: #06A4ED">&#x25A0;</span>
+								<span class="caret"></span>
+							</div>
+							<ul class="dropdown-menu">
+								<li><a class="colorSelect" data-color="#292526" href="#"><span
+										style="font-size: 17px; color: #292526;">&#x25A0;</span></a></li>
+								<li><a class="colorSelect" data-color="#06A4ED" href="#"><span
+										style="font-size: 17px; color: #06A4ED;">&#x25A0;</span></a></li>
+								<li><a class="colorSelect" data-color="#66CC33" href="#"><span
+										style="font-size: 17px; color: #66CC33;">&#x25A0;</span></a></li>
+								<li><a class="colorSelect" data-color="#E31429" href="#"><span
+										style="font-size: 17px; color: #E31429;">&#x25A0;</span></a></li>
+							</ul>
+						</div>
+						<div id="brushSelectWrapper" data-placement="top" data-original-title="Change Brush Size" class="btn-group ">
+							<div class="btn dropdown-toggle" data-toggle="dropdown">
+								<i id="brushSelector" class="tt-icon-brush-1"></i> <span
+									class="caret"></span>
+							</div>
+							<ul class="dropdown-menu">
+								<li><a class="brushSelect" data-brush="1"><span
+										style="margin-left: -2px;"><i class="tt-icon-brush-1"></i></span></a></li>
+								<li><a class="brushSelect" data-brush="6"><span
+										style="margin-left: -1px;"><i class="tt-icon-brush-6"></i></span></i></a></li>
+								<li><a class="brushSelect" data-brush="9"><span
+										style="margin-left: -1px;"><i class="tt-icon-brush-9"></i></span></i></a></li>
+								<li><a class="brushSelect" data-brush="12"><span
+										style="margin-left: 2px;"><i class="tt-icon-brush-12"></i></span></i></a></li>
+							</ul>
+						</div>
+						<div class="btn-group ">
+							<div data-placement="top" data-original-title="Toggle Drawing Eraser" class="btn eraseToggle">
+								<i class="tt-icon-eraser"></i>
+							</div>
+						</div>
+					</div>
+
+					<span id="statusBar" class="page-status pull-right ">1/1</span>
+					<div class="btn-group pager-buttons pull-right">
+						<div id="prev" data-placement="top" data-original-title="Previous Page" class="btn btn-inverse">
+							<i class="icon-arrow-left icon-white"></i>
+						</div>
+						<div id="saveDoc" data-placement="top" data-original-title="Download Current Page" class="btn btn-inverse">
+							<i class="icon-download-alt icon-white"></i>
+						</div>
+						
+						<div id="next" data-placement="top" data-original-title="Next/New Page" class="btn btn-inverse">
+							<i class=" icon-arrow-right icon-white"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		#{/if} #{else}
+		<div class="navbar navbar-inverse toolbar">
+			<div class="navbar-inner black-shadow">
+				<div class="container">
+					<div id="playbackControl" class="row pull-left">
+						<div id="pauseReplay" data-placement="top" data-original-title="Pause Session Playback" class="span1 btn btn-inverse">
+							<i class=" icon-pause icon-white"></i>
+						</div>
+						<div id="resumeReplay" data-placement="top" data-original-title="Resume Session Playback" class="span1 btn btn-inverse">
+							<i class=" icon-play icon-white"></i>
+						</div>
+						<div id="rewindSlider" data-placement="top" data-original-title="Fast Forward/Rewind Session" class="span3"
+							style="margin: 12px; height: 12px;"></div>
+					</div>
+
+					<span id="statusBar" class="page-status pull-right ">1/1</span>
+					<div class="btn-group pager-buttons pull-right">
+						<div id="saveDoc" data-placement="top" data-original-title="Download Current Page" class="btn btn-inverse">
+							<i class="icon-download-alt icon-white"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		#{/else}
+	</div>
+</div>
