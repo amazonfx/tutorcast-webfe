@@ -1,7 +1,7 @@
 tutorcast-webfe
 ======
 
-Webfront end for the tutorcast web application
+Web frontend for the Tutorcast
 
 Web based collaborative document sharing and editing, annotations, and video chat. Entire session is seamlessly recorded.
 
